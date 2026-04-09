@@ -16,35 +16,27 @@ struct LoginView: View {
     private let typewriterFull = "Ciallo (∠·ω )⌒★"
     @State private var typewriterText = ""
 
-    private let sharkBlue = Color(red: 0.298, green: 0.545, blue: 0.769)
-    private let sharkDeep = Color(red: 0.118, green: 0.294, blue: 0.494)
-    private let bgTop     = Color(red: 0.839, green: 0.914, blue: 0.961)
-
     var body: some View {
         ZStack(alignment: .bottom) {
 
-            // 背景色延伸到全屏（包括安全区）
-            bgTop.ignoresSafeArea()
+            BlahajTheme.pageBg.ignoresSafeArea()
 
-            // Hero — 不忽略安全区，自然从 Dynamic Island 下方开始
             VStack(spacing: 0) {
-                heroSection
-                    .padding(.top, 24)
+                heroSection.padding(.top, 24)
                 Spacer()
             }
 
-            // 底部卡片内容
+            // 底部白卡
             VStack(spacing: 20) {
 
-                // 标题
                 HStack {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("欢迎回来")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(sharkDeep)
+                            .foregroundStyle(BlahajTheme.textPrimary)
                         Text("登录账号，继续你的海洋之旅")
                             .font(.footnote)
-                            .foregroundStyle(sharkBlue.opacity(0.8))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.8))
                     }
                     Spacer()
                 }
@@ -59,7 +51,7 @@ struct LoginView: View {
                             text: $email,
                             isSecure: false,
                             keyboardType: .emailAddress,
-                            accentColor: sharkBlue
+                            accentColor: BlahajTheme.primaryMid
                         )
                         Divider().padding(.leading, 52)
                         AuthFieldRow(
@@ -68,13 +60,13 @@ struct LoginView: View {
                             text: $password,
                             isSecure: true,
                             keyboardType: .default,
-                            accentColor: sharkBlue
+                            accentColor: BlahajTheme.primaryMid
                         )
                     }
-                    .glassEffect(in: .rect(cornerRadius: 18))
+                    .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
                 }
 
-                // 登录按钮
+                // CTA 登录按钮 — Shark Pink
                 Button(action: login) {
                     Group {
                         if isLoading {
@@ -87,8 +79,8 @@ struct LoginView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 15)
-                    .background(sharkDeep)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .background(BlahajTheme.cta)
+                    .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusButton, style: .continuous))
                 }
                 .disabled(isLoading)
 
@@ -96,9 +88,9 @@ struct LoginView: View {
                 Button(action: { showRegister = true }) {
                     HStack(spacing: 4) {
                         Text("还没有账号？")
-                            .foregroundStyle(sharkBlue.opacity(0.75))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.75))
                         Text("立即注册")
-                            .foregroundStyle(sharkDeep)
+                            .foregroundStyle(BlahajTheme.cta)
                             .fontWeight(.semibold)
                     }
                     .font(.subheadline)
@@ -106,22 +98,20 @@ struct LoginView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 32)
-            // 内容在 Home 条上方留出空间
             .safeAreaPadding(.bottom)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity)
-            // 背景形状单独延伸到屏幕物理底边
             .background(alignment: .top) {
                 UnevenRoundedRectangle(
-                    topLeadingRadius: 42,
+                    topLeadingRadius: BlahajTheme.radiusCard,
                     bottomLeadingRadius: 0,
                     bottomTrailingRadius: 0,
-                    topTrailingRadius: 42,
+                    topTrailingRadius: BlahajTheme.radiusCard,
                     style: .continuous
                 )
-                .fill(Color.white)
+                .fill(BlahajTheme.cardBg)
                 .ignoresSafeArea(edges: .bottom)
-                .shadow(color: sharkDeep.opacity(0.1), radius: 20, x: 0, y: -4)
+                .shadow(color: BlahajTheme.primary.opacity(0.1), radius: 20, x: 0, y: -4)
             }
         }
         .sheet(isPresented: $showRegister) {
@@ -136,27 +126,27 @@ struct LoginView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 118, height: 118)
-                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                .shadow(color: sharkDeep.opacity(0.2), radius: 14, x: 0, y: 7)
-            
+                .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusAvatar, style: .continuous))
+                .shadow(color: BlahajTheme.primary.opacity(0.2), radius: 14, x: 0, y: 7)
+
             Text(typewriterText)
                 .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(sharkDeep)
+                .foregroundStyle(BlahajTheme.textPrimary)
                 .onAppear { startTypewriter() }
-            
+
             VStack(spacing: 5) {
                 Text("Blåhaj Chat")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundStyle(sharkDeep)
+                    .foregroundStyle(BlahajTheme.textPrimary)
                 Text("Blåhaj Ocean Friends")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(sharkBlue)
+                    .foregroundStyle(BlahajTheme.primaryMid)
                     .tracking(1.6)
             }
 
             Text("布罗艾的海洋朋友")
                 .font(.subheadline)
-                .foregroundStyle(sharkBlue.opacity(0.72))
+                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.72))
         }
     }
 
@@ -175,7 +165,6 @@ struct LoginView: View {
     private func login() {
         guard !email.isEmpty, !password.isEmpty else { return }
         isLoading = true
-        // TODO: 调用后端登录 API
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             isLoading = false
         }
