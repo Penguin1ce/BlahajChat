@@ -130,7 +130,7 @@ struct RegisterView: View {
                     topTrailingRadius: 42,
                     style: .continuous
                 )
-                .fill(.regularMaterial)
+                .fill(Color.white)
                 .ignoresSafeArea(edges: .bottom)
                 .shadow(color: sharkDeep.opacity(0.1), radius: 20, x: 0, y: -4)
             }

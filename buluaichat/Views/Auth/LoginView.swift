@@ -13,6 +13,9 @@ struct LoginView: View {
     @State private var showRegister = false
     @State private var isLoading = false
 
+    private let typewriterFull = "Ciallo (∠·ω )⌒★"
+    @State private var typewriterText = ""
+
     private let sharkBlue = Color(red: 0.298, green: 0.545, blue: 0.769)
     private let sharkDeep = Color(red: 0.118, green: 0.294, blue: 0.494)
     private let bgTop     = Color(red: 0.839, green: 0.914, blue: 0.961)
@@ -116,7 +119,7 @@ struct LoginView: View {
                     topTrailingRadius: 42,
                     style: .continuous
                 )
-                .fill(.regularMaterial)
+                .fill(Color.white)
                 .ignoresSafeArea(edges: .bottom)
                 .shadow(color: sharkDeep.opacity(0.1), radius: 20, x: 0, y: -4)
             }
@@ -135,10 +138,15 @@ struct LoginView: View {
                 .frame(width: 118, height: 118)
                 .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .shadow(color: sharkDeep.opacity(0.2), radius: 14, x: 0, y: 7)
-
+            
+            Text(typewriterText)
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundStyle(sharkDeep)
+                .onAppear { startTypewriter() }
+            
             VStack(spacing: 5) {
-                Text("布罗艾")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                Text("Blåhaj Chat")
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
                     .foregroundStyle(sharkDeep)
                 Text("Blåhaj Ocean Friends")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
@@ -149,6 +157,17 @@ struct LoginView: View {
             Text("布罗艾的海洋朋友")
                 .font(.subheadline)
                 .foregroundStyle(sharkBlue.opacity(0.72))
+        }
+    }
+
+    // MARK: - Typewriter
+    private func startTypewriter() {
+        typewriterText = ""
+        let characters = Array(typewriterFull)
+        for (i, char) in characters.enumerated() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
+                typewriterText.append(char)
+            }
         }
     }
 
