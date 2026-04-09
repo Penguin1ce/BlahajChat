@@ -31,7 +31,7 @@ enum BlahajTheme {
     // 用于：CTA 主按钮、徽标、关键提醒
 
     /// 深粉，CTA 按钮 / 重要动作
-    static let accent       = Color(hex: "#D4697A")
+    static let accent       = Color(hex: "#ffdada")
     /// 浅粉，提示 Badge / 柔和标记
     static let accentLight  = Color(hex: "#F2BFCA")
 

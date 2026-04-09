@@ -46,30 +46,32 @@ struct RegisterView: View {
                 // 输入框
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
-                        GlassEffectContainer {
-                            VStack(spacing: 0) {
-                                AuthFieldRow(icon: "envelope.fill", placeholder: "邮箱地址",
-                                             text: $email, isSecure: false,
-                                             keyboardType: .emailAddress,
-                                             accentColor: BlahajTheme.primaryMid)
-                                Divider().padding(.leading, 52)
-                                AuthFieldRow(icon: "person.fill", placeholder: "用户名",
-                                             text: $username, isSecure: false,
-                                             keyboardType: .default,
-                                             accentColor: BlahajTheme.primaryMid)
-                                Divider().padding(.leading, 52)
-                                AuthFieldRow(icon: "lock.fill", placeholder: "密码",
-                                             text: $password, isSecure: true,
-                                             keyboardType: .default,
-                                             accentColor: BlahajTheme.primaryMid)
-                                Divider().padding(.leading, 52)
-                                AuthFieldRow(icon: "lock.shield.fill", placeholder: "确认密码",
-                                             text: $confirmPassword, isSecure: true,
-                                             keyboardType: .default,
-                                             accentColor: BlahajTheme.primaryMid)
-                            }
-                            .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
+                        VStack(spacing: 0) {
+                            AuthFieldRow(icon: "envelope.fill", placeholder: "邮箱地址",
+                                         text: $email, isSecure: false,
+                                         keyboardType: .emailAddress,
+                                         accentColor: BlahajTheme.primaryMid)
+                            Divider().padding(.leading, 52)
+                            AuthFieldRow(icon: "person.fill", placeholder: "用户名",
+                                         text: $username, isSecure: false,
+                                         keyboardType: .default,
+                                         accentColor: BlahajTheme.primaryMid)
+                            Divider().padding(.leading, 52)
+                            AuthFieldRow(icon: "lock.fill", placeholder: "密码",
+                                         text: $password, isSecure: true,
+                                         keyboardType: .default,
+                                         accentColor: BlahajTheme.primaryMid)
+                            Divider().padding(.leading, 52)
+                            AuthFieldRow(icon: "lock.shield.fill", placeholder: "确认密码",
+                                         text: $confirmPassword, isSecure: true,
+                                         keyboardType: .default,
+                                         accentColor: BlahajTheme.primaryMid)
                         }
+                        .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
+                        .animation(.none, value: email)
+                        .animation(.none, value: username)
+                        .animation(.none, value: password)
+                        .animation(.none, value: confirmPassword)
 
                         if let error = errorMessage {
                             HStack(spacing: 6) {

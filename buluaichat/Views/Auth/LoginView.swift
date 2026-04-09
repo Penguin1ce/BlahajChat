@@ -42,29 +42,29 @@ struct LoginView: View {
                 }
                 .padding(.horizontal, 4)
 
-                // 输入框
-                GlassEffectContainer {
-                    VStack(spacing: 0) {
-                        AuthFieldRow(
-                            icon: "envelope.fill",
-                            placeholder: "邮箱地址",
-                            text: $email,
-                            isSecure: false,
-                            keyboardType: .emailAddress,
-                            accentColor: BlahajTheme.primaryMid
-                        )
-                        Divider().padding(.leading, 52)
-                        AuthFieldRow(
-                            icon: "lock.fill",
-                            placeholder: "密码",
-                            text: $password,
-                            isSecure: true,
-                            keyboardType: .default,
-                            accentColor: BlahajTheme.primaryMid
-                        )
-                    }
-                    .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
+                // 输入框 — 不用 GlassEffectContainer，避免焦点切换时触发 morphing 动画
+                VStack(spacing: 0) {
+                    AuthFieldRow(
+                        icon: "envelope.fill",
+                        placeholder: "邮箱地址",
+                        text: $email,
+                        isSecure: false,
+                        keyboardType: .emailAddress,
+                        accentColor: BlahajTheme.primaryMid
+                    )
+                    Divider().padding(.leading, 52)
+                    AuthFieldRow(
+                        icon: "lock.fill",
+                        placeholder: "密码",
+                        text: $password,
+                        isSecure: true,
+                        keyboardType: .default,
+                        accentColor: BlahajTheme.primaryMid
+                    )
                 }
+                .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
+                .animation(.none, value: email)
+                .animation(.none, value: password)
 
                 // CTA 登录按钮 — Shark Pink
                 Button(action: login) {
