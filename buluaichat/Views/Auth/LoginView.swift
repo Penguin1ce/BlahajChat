@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct LoginView: View {
+    var onLoginSuccess: (() -> Void)? = nil
+
     @State private var email = ""
     @State private var password = ""
     @State private var showRegister = false
@@ -167,6 +169,7 @@ struct LoginView: View {
         isLoading = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             isLoading = false
+            onLoginSuccess?()
         }
     }
 }

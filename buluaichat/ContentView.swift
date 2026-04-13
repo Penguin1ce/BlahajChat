@@ -8,8 +8,20 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appState = AppState()
+    @State private var isLoggedIn = false
+
     var body: some View {
-        LoginView()
+        if isLoggedIn {
+            MainTabView()
+                .environmentObject(appState)
+        } else {
+            LoginView(onLoginSuccess: {
+                withAnimation(.spring(response: 0.48, dampingFraction: 0.85)) {
+                    isLoggedIn = true
+                }
+            })
+        }
     }
 }
 
