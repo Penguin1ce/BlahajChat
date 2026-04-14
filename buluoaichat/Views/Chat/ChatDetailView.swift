@@ -23,39 +23,37 @@ struct ChatDetailView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            BlahajTheme.pageBg.ignoresSafeArea()
-
-            // ── 消息列表 ─────────────────────────────────────────────
-            ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(spacing: 4) {
-                        ForEach(messages) { msg in
-                            MessageBubbleView(
-                                message: msg,
-                                contactName: conversation.displayName,
-                                contactAvatarName: conversation.displayAvatarName,
-                                isGroup: conversation.isGroup
-                            )
-                            .id(msg.id)
-                        }
-                        Color.clear.frame(height: 84).id("bottom")
+        // ── 消息列表 ─────────────────────────────────────────────
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 4) {
+                    ForEach(messages) { msg in
+                        MessageBubbleView(
+                            message: msg,
+                            contactName: conversation.displayName,
+                            contactAvatarName: conversation.displayAvatarName,
+                            isGroup: conversation.isGroup
+                        )
+                        .id(msg.id)
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.top, 8)
+                    Color.clear.frame(height: 8).id("bottom")
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .onAppear { proxy.scrollTo("bottom", anchor: .bottom) }
-                .onChange(of: messages.count) {
-                    withAnimation(.spring(response: 0.3)) {
-                        proxy.scrollTo("bottom", anchor: .bottom)
-                    }
+                .padding(.horizontal, 10)
+                .padding(.top, 8)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                // ── 消息输入栏 ───────────────────────────────────────────
+                MessageInputBar(text: $inputText, inputFocused: $inputFocused, onSend: sendMessage)
+            }
+            .onAppear { proxy.scrollTo("bottom", anchor: .bottom) }
+            .onChange(of: messages.count) {
+                withAnimation(.spring(response: 0.3)) {
+                    proxy.scrollTo("bottom", anchor: .bottom)
                 }
             }
-
-            // ── 消息输入栏 ───────────────────────────────────────────
-            MessageInputBar(text: $inputText, inputFocused: $inputFocused, onSend: sendMessage)
         }
+        .background(BlahajTheme.pageBg.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
@@ -78,8 +76,6 @@ struct ChatDetailView: View {
                 }
             }
         }
-        .onAppear  { appState.showTabBar = false }
-        .onDisappear { appState.showTabBar = true }
         .fullScreenCover(isPresented: $showVideoCall) {
             VideoCallView(conversation: conversation)
                 .environmentObject(appState)
@@ -264,8 +260,8 @@ struct MessageInputBar: View {
         .padding(.vertical, 10)
         .glassEffect(in: RoundedRectangle(cornerRadius: 30, style: .continuous))
         .padding(.horizontal, 12)
-        .padding(.bottom, 8)
-        .safeAreaPadding(.bottom)
+        .padding(.top, 6)
+        .padding(.bottom, 10)
     }
 }
 
