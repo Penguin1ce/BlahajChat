@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		022C6A1B2F86ADE600ADCCA1 /* buluaichat */ = {
+		022C6A1B2F86ADE600ADCCA1 /* buluoaichat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = buluoaichat;
 			sourceTree = "<group>";
@@ -32,7 +32,7 @@
 		022C6A102F86ADE600ADCCA1 = {
 			isa = PBXGroup;
 			children = (
-				022C6A1B2F86ADE600ADCCA1 /* buluaichat */,
+				022C6A1B2F86ADE600ADCCA1 /* buluoaichat */,
 				022C6A1A2F86ADE600ADCCA1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				022C6A1B2F86ADE600ADCCA1 /* buluaichat */,
+				022C6A1B2F86ADE600ADCCA1 /* buluoaichat */,
 			);
 			name = buluaichat;
 			packageProductDependencies = (
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 022C6A142F86ADE600ADCCA1 /* Build configuration list for PBXProject "buluaichat" */;
+			buildConfigurationList = 022C6A142F86ADE600ADCCA1 /* Build configuration list for PBXProject "buluoaichat" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -313,7 +313,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		022C6A142F86ADE600ADCCA1 /* Build configuration list for PBXProject "buluaichat" */ = {
+		022C6A142F86ADE600ADCCA1 /* Build configuration list for PBXProject "buluoaichat" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				022C6A222F86ADE700ADCCA1 /* Debug */,

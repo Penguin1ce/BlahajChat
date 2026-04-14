@@ -32,6 +32,33 @@ struct Contact: Identifiable, Hashable {
     var phone: String = ""
 }
 
+// MARK: - Request Status
+
+enum RequestStatus {
+    case pending, accepted, rejected
+}
+
+// MARK: - Friend Request
+
+struct FriendRequest: Identifiable {
+    var id: UUID = UUID()
+    var from: Contact
+    var message: String
+    var date: Date
+    var status: RequestStatus = .pending
+}
+
+// MARK: - Group Join Request
+
+struct GroupJoinRequest: Identifiable {
+    var id: UUID = UUID()
+    var from: Contact
+    var groupName: String
+    var message: String
+    var date: Date
+    var status: RequestStatus = .pending
+}
+
 // MARK: - Message
 
 struct Message: Identifiable {
@@ -130,5 +157,48 @@ extension Contact {
         Contact(name: "小鲨鱼",       isOnline: true,  phone: "+86 138 0006 0006"),
         Contact(name: "章鱼老师 🐙",  isOnline: true,  phone: "+86 138 0007 0007"),
         Contact(name: "座头鲸",       isOnline: false, phone: "+86 138 0008 0008"),
+    ]
+}
+
+extension FriendRequest {
+    static let samples: [FriendRequest] = [
+        FriendRequest(
+            from: Contact(name: "珊瑚小姐", isOnline: true, phone: "+86 139 0011 0011"),
+            message: "Hi，我们在深海探索营认识的，加个好友吧！",
+            date: .minutesAgo(30)
+        ),
+        FriendRequest(
+            from: Contact(name: "灯笼鱼 🎣", isOnline: false, phone: "+86 139 0022 0022"),
+            message: "你好，我是深海摄影师，希望和你交流！",
+            date: .hoursAgo(3)
+        ),
+        FriendRequest(
+            from: Contact(name: "飞鱼快递", isOnline: true, phone: "+86 139 0033 0033"),
+            message: "朋友推荐我加你的～",
+            date: .daysAgo(1)
+        ),
+    ]
+}
+
+extension GroupJoinRequest {
+    static let samples: [GroupJoinRequest] = [
+        GroupJoinRequest(
+            from: Contact(name: "乌贼同学", isOnline: true, phone: "+86 150 0001 0001"),
+            groupName: "鲨鱼海洋小队 🐋",
+            message: "我想加入你们的小队，一起探索海洋！",
+            date: .minutesAgo(15)
+        ),
+        GroupJoinRequest(
+            from: Contact(name: "螃蟹先生 🦀", isOnline: false, phone: "+86 150 0002 0002"),
+            groupName: "深海探索队 🪸",
+            message: "听说这里经常发现新奇的东西，申请加入～",
+            date: .hoursAgo(5)
+        ),
+        GroupJoinRequest(
+            from: Contact(name: "河豚气球", isOnline: true, phone: "+86 150 0003 0003"),
+            groupName: "鲨鱼海洋小队 🐋",
+            message: "大家好，我想参与你们的活动！",
+            date: .daysAgo(2)
+        ),
     ]
 }
