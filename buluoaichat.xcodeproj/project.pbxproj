@@ -13,7 +13,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		022C6A1B2F86ADE600ADCCA1 /* buluaichat */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = buluaichat;
+			path = buluoaichat;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
