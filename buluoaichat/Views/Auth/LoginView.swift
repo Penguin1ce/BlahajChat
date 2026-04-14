@@ -100,7 +100,6 @@ struct LoginView: View {
             }
             .padding(.horizontal, 24)
             .padding(.top, 32)
-            .safeAreaPadding(.bottom)
             .padding(.bottom, 16)
             .frame(maxWidth: .infinity)
             .background(alignment: .top) {
