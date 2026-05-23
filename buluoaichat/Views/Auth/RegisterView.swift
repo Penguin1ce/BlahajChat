@@ -9,11 +9,15 @@ import SwiftUI
 
 struct RegisterView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appState: AppState
 
     @State private var email = ""
     @State private var username = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var emailCode = ""
+    @State private var isSendingCode = false
+    @State private var codeMessage: String?
     @State private var isLoading = false
     @State private var errorMessage: String?
 
@@ -57,6 +61,11 @@ struct RegisterView: View {
                                          keyboardType: .default,
                                          accentColor: BlahajTheme.primaryMid)
                             Divider().padding(.leading, 52)
+                            AuthFieldRow(icon: "number.circle.fill", placeholder: "邮箱验证码",
+                                         text: $emailCode, isSecure: false,
+                                         keyboardType: .numberPad,
+                                         accentColor: BlahajTheme.primaryMid)
+                            Divider().padding(.leading, 52)
                             AuthFieldRow(icon: "lock.fill", placeholder: "密码",
                                          text: $password, isSecure: true,
                                          keyboardType: .default,
@@ -70,8 +79,35 @@ struct RegisterView: View {
                         .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
                         .animation(.none, value: email)
                         .animation(.none, value: username)
+                        .animation(.none, value: emailCode)
                         .animation(.none, value: password)
                         .animation(.none, value: confirmPassword)
+
+                        Button(action: requestCode) {
+                            HStack(spacing: 7) {
+                                if isSendingCode {
+                                    ProgressView()
+                                        .tint(BlahajTheme.primary)
+                                } else {
+                                    Image(systemName: "paperplane.fill")
+                                }
+                                Text(isSendingCode ? "正在发送验证码" : "发送邮箱验证码")
+                            }
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(BlahajTheme.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 11)
+                            .background(BlahajTheme.pageBg, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        }
+                        .disabled(isSendingCode || email.isEmpty)
+
+                        if let codeMessage {
+                            Text(codeMessage)
+                                .font(.caption)
+                                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.72))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 4)
+                        }
 
                         if let error = errorMessage {
                             HStack(spacing: 6) {
@@ -165,22 +201,53 @@ struct RegisterView: View {
             errorMessage = "请填写所有字段"
             return
         }
+        guard !emailCode.isEmpty else {
+            errorMessage = "请输入邮箱验证码"
+            return
+        }
         guard password == confirmPassword else {
             errorMessage = "两次密码不一致"
             return
         }
-        guard password.count >= 8 else {
-            errorMessage = "密码至少需要 8 位"
+        guard password.count >= 6 else {
+            errorMessage = "密码至少需要 6 位"
             return
         }
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        Task {
+            do {
+                try await appState.register(
+                    email: email,
+                    password: password,
+                    emailCode: emailCode,
+                    nickname: username
+                )
+                dismiss()
+            } catch {
+                errorMessage = error.userFacingMessage
+            }
             isLoading = false
-            dismiss()
+        }
+    }
+
+    private func requestCode() {
+        guard !email.isEmpty else { return }
+        errorMessage = nil
+        codeMessage = nil
+        isSendingCode = true
+        Task {
+            do {
+                try await appState.requestEmailCode(email: email)
+                codeMessage = "验证码已发送，请前往邮箱查收"
+            } catch {
+                errorMessage = error.userFacingMessage
+            }
+            isSendingCode = false
         }
     }
 }
 
 #Preview {
     RegisterView()
+        .environmentObject(AppState())
 }

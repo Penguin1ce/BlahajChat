@@ -8,12 +8,13 @@
 import SwiftUI
 
 struct LoginView: View {
-    var onLoginSuccess: (() -> Void)? = nil
+    @EnvironmentObject private var appState: AppState
 
     @State private var email = ""
     @State private var password = ""
     @State private var showRegister = false
     @State private var isLoading = false
+    @State private var errorMessage: String?
 
     private let typewriterFull = "Ciallo (∠·ω )⌒★"
     @State private var typewriterText = ""
@@ -68,6 +69,19 @@ struct LoginView: View {
                 .animation(.none, value: email)
                 .animation(.none, value: password)
 
+                if let errorMessage {
+                    HStack(spacing: 6) {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(BlahajTheme.primary)
+                        Text(errorMessage)
+                            .foregroundStyle(BlahajTheme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 4)
+                }
+
                 // CTA 登录按钮 — Shark Pink
                 Button(action: login) {
                     Group {
@@ -84,7 +98,7 @@ struct LoginView: View {
                     .background(BlahajTheme.cta)
                     .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusButton, style: .continuous))
                 }
-                .disabled(isLoading)
+                .disabled(isLoading || email.isEmpty || password.isEmpty)
 
                 // 注册入口
                 Button(action: { showRegister = true }) {
@@ -117,6 +131,7 @@ struct LoginView: View {
         }
         .sheet(isPresented: $showRegister) {
             RegisterView()
+                .environmentObject(appState)
         }
     }
 
@@ -165,14 +180,20 @@ struct LoginView: View {
     // MARK: - Action
     private func login() {
         guard !email.isEmpty, !password.isEmpty else { return }
+        errorMessage = nil
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        Task {
+            do {
+                try await appState.login(email: email, password: password)
+            } catch {
+                errorMessage = error.userFacingMessage
+            }
             isLoading = false
-            onLoginSuccess?()
         }
     }
 }
 
 #Preview {
     LoginView()
+        .environmentObject(AppState())
 }

@@ -12,14 +12,13 @@ struct ChatDetailView: View {
     @EnvironmentObject private var appState: AppState
     let conversation: Conversation
 
-    @State private var messages: [Message]
     @State private var inputText = ""
     @State private var showVideoCall = false
+    @State private var isLoadingHistory = true
     @FocusState private var inputFocused: Bool
 
-    init(conversation: Conversation) {
-        self.conversation = conversation
-        _messages = State(initialValue: conversation.messages)
+    private var messages: [Message] {
+        appState.messages(for: conversation.serverID)
     }
 
     var body: some View {
@@ -27,6 +26,12 @@ struct ChatDetailView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(spacing: 4) {
+                    if isLoadingHistory {
+                        ProgressView()
+                            .tint(BlahajTheme.primary)
+                            .padding(.vertical, 20)
+                    }
+
                     ForEach(messages) { msg in
                         MessageBubbleView(
                             message: msg,
@@ -46,7 +51,12 @@ struct ChatDetailView: View {
                 // ── 消息输入栏 ───────────────────────────────────────────
                 MessageInputBar(text: $inputText, inputFocused: $inputFocused, onSend: sendMessage)
             }
-            .onAppear { proxy.scrollTo("bottom", anchor: .bottom) }
+            .task(id: conversation.serverID) {
+                isLoadingHistory = true
+                await appState.loadMessages(for: conversation)
+                isLoadingHistory = false
+                proxy.scrollTo("bottom", anchor: .bottom)
+            }
             .onChange(of: messages.count) {
                 withAnimation(.spring(response: 0.3)) {
                     proxy.scrollTo("bottom", anchor: .bottom)
@@ -76,6 +86,14 @@ struct ChatDetailView: View {
                 }
             }
         }
+        .onAppear {
+            appState.showTabBar = false
+            appState.openConversation(conversation)
+        }
+        .onDisappear {
+            appState.showTabBar = true
+            appState.closeConversation(conversation)
+        }
         .fullScreenCover(isPresented: $showVideoCall) {
             VideoCallView(conversation: conversation)
                 .environmentObject(appState)
@@ -98,8 +116,8 @@ struct ChatDetailView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(BlahajTheme.textPrimary)
                     .lineLimit(1)
-                if conversation.isGroup {
-                    Text("群聊")
+        if conversation.isGroup {
+            Text("群聊")
                         .font(.system(size: 11))
                         .foregroundStyle(BlahajTheme.textSecondary.opacity(0.5))
                 } else {
@@ -118,10 +136,8 @@ struct ChatDetailView: View {
     private func sendMessage() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.78)) {
-            messages.append(Message(text: text, isFromMe: true, timestamp: Date()))
-        }
         inputText = ""
+        appState.sendMessage(text, in: conversation)
     }
 }
 
@@ -168,13 +184,24 @@ struct MessageBubbleView: View {
                 .shadow(color: BlahajTheme.primary.opacity(0.26), radius: 8, x: 0, y: 3)
 
             HStack(spacing: 3) {
-                Image(systemName: "checkmark")
+                Image(systemName: deliveryIcon)
                     .font(.system(size: 9, weight: .semibold))
                 Text(message.timestamp.messageTime)
                     .font(.system(size: 10))
             }
             .foregroundStyle(BlahajTheme.textSecondary.opacity(0.42))
             .padding(.trailing, 4)
+        }
+    }
+
+    private var deliveryIcon: String {
+        switch message.deliveryState {
+        case .sending:
+            return "clock"
+        case .sent:
+            return "checkmark"
+        case .failed:
+            return "exclamationmark.circle"
         }
     }
 

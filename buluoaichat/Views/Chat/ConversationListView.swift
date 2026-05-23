@@ -9,11 +9,13 @@ import SwiftUI
 // MARK: - Conversation List
 
 struct ConversationListView: View {
-    @State private var conversations = Conversation.samples
+    @EnvironmentObject private var appState: AppState
     @State private var searchText = ""
+    @State private var isRefreshing = false
 
     private var filtered: [Conversation] {
-        searchText.isEmpty ? conversations :
+        let conversations = appState.conversations
+        return searchText.isEmpty ? conversations :
             conversations.filter { $0.displayName.localizedCaseInsensitiveContains(searchText) }
     }
 
@@ -27,7 +29,7 @@ struct ConversationListView: View {
                         .font(.system(size: 30, weight: .bold, design: .rounded))
                         .foregroundStyle(BlahajTheme.textPrimary)
                     Spacer()
-                    Button(action: {}) {
+                    Button(action: refresh) {
                         Image(systemName: "square.and.pencil.circle.fill")
                             .font(.system(size: 28))
                             .symbolRenderingMode(.hierarchical)
@@ -54,6 +56,10 @@ struct ConversationListView: View {
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(for: Conversation.self) { conv in
             ChatDetailView(conversation: conv)
+                .environmentObject(appState)
+        }
+        .refreshable {
+            await appState.refreshConversations()
         }
     }
 
@@ -109,12 +115,21 @@ struct ConversationListView: View {
             Image(systemName: "bubble.left.and.bubble.right")
                 .font(.system(size: 42))
                 .foregroundStyle(BlahajTheme.primaryMid.opacity(0.28))
-            Text("没有找到相关聊天")
+            Text(searchText.isEmpty ? "暂无会话" : "没有找到相关聊天")
                 .font(.subheadline)
                 .foregroundStyle(BlahajTheme.textSecondary.opacity(0.45))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 56)
+    }
+
+    private func refresh() {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        Task {
+            await appState.refreshConversations()
+            isRefreshing = false
+        }
     }
 }
 
@@ -141,23 +156,23 @@ struct ConversationRow: View {
                         .foregroundStyle(BlahajTheme.textPrimary)
                         .lineLimit(1)
                     Spacer()
-                    if let msg = conversation.lastMessage {
-                        Text(msg.timestamp.chatListTime)
+                    if let lastMessageAt = conversation.lastMessageAt {
+                        Text(lastMessageAt.chatListTime)
                             .font(.system(size: 12))
                             .foregroundStyle(BlahajTheme.textSecondary.opacity(0.48))
                     }
                 }
 
                 HStack(spacing: 4) {
-                    if let msg = conversation.lastMessage {
-                        if msg.isFromMe {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.5))
-                        }
-                        Text(msg.text)
+                    if let lastMessageText = conversation.lastMessageText {
+                        Text(lastMessageText)
                             .font(.system(size: 14))
                             .foregroundStyle(BlahajTheme.textSecondary.opacity(0.62))
+                            .lineLimit(1)
+                    } else {
+                        Text(conversation.isGroup ? "群聊已创建" : "开始聊天吧")
+                            .font(.system(size: 14))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.46))
                             .lineLimit(1)
                     }
                     Spacer()

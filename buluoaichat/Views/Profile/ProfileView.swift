@@ -21,6 +21,7 @@ struct ProfileView: View {
     @State private var showPasswordSection = false
     @State private var isSaving = false
     @State private var saveSuccess = false
+    @State private var errorMessage: String?
 
     var body: some View {
         ZStack {
@@ -31,7 +32,14 @@ struct ProfileView: View {
                     avatarSection.padding(.top, 4)
                     infoSection
                     passwordSection
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(BlahajTheme.textSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     saveButton
+                    logoutButton
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
@@ -168,21 +176,34 @@ struct ProfileView: View {
         .padding(.top, 4)
     }
 
+    private var logoutButton: some View {
+        Button(action: {
+            Task { await appState.logout() }
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                Text("退出登录")
+            }
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(BlahajTheme.primary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 13)
+            .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+    }
+
     // MARK: - Save ───────────────────────────────────────────────────
     private func saveProfile() {
         let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let e = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !n.isEmpty, !e.isEmpty else { return }
+        guard !n.isEmpty, !e.isEmpty else {
+            errorMessage = "昵称和邮箱不能为空"
+            return
+        }
+        errorMessage = "当前后端还没有开放资料修改接口"
         isSaving = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            appState.currentUser.name  = n
-            appState.currentUser.email = e
             isSaving = false
-            withAnimation { saveSuccess = true }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                withAnimation { saveSuccess = false }
-                onDone?()
-            }
         }
     }
 }

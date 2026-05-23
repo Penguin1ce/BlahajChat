@@ -136,7 +136,7 @@ struct VideoCallView: View {
         }
         .ignoresSafeArea()
         .statusBarHidden(true)
-        .onAppear { manager.connect(roomId: conversation.id.uuidString) }
+        .onAppear { manager.connect(roomId: conversation.serverID) }
         .onChange(of: manager.state) { _, newState in
             if newState == .ended { dismiss() }
         }

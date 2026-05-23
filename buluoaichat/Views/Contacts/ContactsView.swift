@@ -9,24 +9,26 @@ import SwiftUI
 // MARK: - Contacts View
 
 struct ContactsView: View {
-    @State private var contacts = Contact.samples
-    @State private var groups = Conversation.samples.filter { $0.isGroup }
+    @EnvironmentObject private var appState: AppState
     @State private var searchText = ""
     @State private var showRequests = false
+    @State private var selectedConversation: Conversation?
 
     private var totalRequests: Int {
-        FriendRequest.samples.count + GroupJoinRequest.samples.count
+        appState.friendRequests.count
     }
 
     // 搜索过滤后的联系人
     private var filteredContacts: [Contact] {
-        searchText.isEmpty ? contacts :
+        let contacts = appState.contacts
+        return searchText.isEmpty ? contacts :
             contacts.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
     }
 
     // 搜索过滤后的群聊
     private var filteredGroups: [Conversation] {
-        searchText.isEmpty ? groups :
+        let groups = appState.conversations.filter(\.isGroup)
+        return searchText.isEmpty ? groups :
             groups.filter { ($0.groupName ?? "").localizedCaseInsensitiveContains(searchText) }
     }
 
@@ -84,7 +86,9 @@ struct ContactsView: View {
 
                     VStack(spacing: 0) {
                         ForEach(Array(filteredGroups.enumerated()), id: \.element.id) { idx, group in
-                            GroupContactRow(group: group)
+                            GroupContactRow(group: group) {
+                                selectedConversation = group
+                            }
                             if idx < filteredGroups.count - 1 {
                                 Divider()
                                     .padding(.leading, 74)
@@ -113,7 +117,9 @@ struct ContactsView: View {
 
                             VStack(spacing: 0) {
                                 ForEach(Array(section.value.enumerated()), id: \.element.id) { idx, contact in
-                                    ContactRow(contact: contact)
+                                    ContactRow(contact: contact) {
+                                        openChat(with: contact)
+                                    }
                                     if idx < section.value.count - 1 {
                                         Divider()
                                             .padding(.leading, 74)
@@ -140,6 +146,15 @@ struct ContactsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showRequests) {
             FriendRequestsView()
+                .environmentObject(appState)
+        }
+        .navigationDestination(item: $selectedConversation) { conversation in
+            ChatDetailView(conversation: conversation)
+                .environmentObject(appState)
+        }
+        .refreshable {
+            await appState.refreshContacts()
+            await appState.refreshFriendRequests()
         }
     }
 
@@ -192,12 +207,18 @@ struct ContactsView: View {
             Image(systemName: "person.2.slash")
                 .font(.system(size: 42))
                 .foregroundStyle(BlahajTheme.primaryMid.opacity(0.28))
-            Text("没有找到相关联系人或群聊")
+            Text(searchText.isEmpty ? "暂无联系人或群聊" : "没有找到相关联系人或群聊")
                 .font(.subheadline)
                 .foregroundStyle(BlahajTheme.textSecondary.opacity(0.45))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 56)
+    }
+
+    private func openChat(with contact: Contact) {
+        Task {
+            selectedConversation = await appState.startConversation(with: contact)
+        }
     }
 }
 
@@ -205,10 +226,10 @@ struct ContactsView: View {
 
 struct GroupContactRow: View {
     let group: Conversation
+    let onMessage: () -> Void
 
     private var memberCount: Int {
-        // 示例：取消息发送者数量作为成员数参考
-        3
+        0
     }
 
     var body: some View {
@@ -226,14 +247,14 @@ struct GroupContactRow: View {
                 Text(group.groupName ?? "群聊")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(BlahajTheme.textPrimary)
-                Text("\(memberCount) 位成员")
+                Text(memberCount > 0 ? "\(memberCount) 位成员" : "群聊")
                     .font(.system(size: 12))
                     .foregroundStyle(BlahajTheme.textSecondary.opacity(0.52))
             }
 
             Spacer()
 
-            Button(action: {}) {
+            Button(action: onMessage) {
                 Image(systemName: "message.fill")
                     .font(.system(size: 17))
                     .foregroundStyle(BlahajTheme.primaryMid)
@@ -249,6 +270,7 @@ struct GroupContactRow: View {
 
 struct ContactRow: View {
     let contact: Contact
+    let onMessage: () -> Void
 
     var body: some View {
         HStack(spacing: 14) {
@@ -264,7 +286,7 @@ struct ContactRow: View {
                 Text(contact.name)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(BlahajTheme.textPrimary)
-                Text(contact.phone)
+                Text(contact.subtitle.isEmpty ? contact.email : contact.subtitle)
                     .font(.system(size: 12))
                     .foregroundStyle(BlahajTheme.textSecondary.opacity(0.52))
             }
@@ -272,7 +294,7 @@ struct ContactRow: View {
             Spacer()
 
             HStack(spacing: 18) {
-                Button(action: {}) {
+                Button(action: onMessage) {
                     Image(systemName: "message.fill")
                         .font(.system(size: 17))
                         .foregroundStyle(BlahajTheme.primaryMid)

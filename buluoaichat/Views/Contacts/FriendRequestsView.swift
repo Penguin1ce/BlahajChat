@@ -8,35 +8,23 @@ import SwiftUI
 
 struct FriendRequestsView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var appState: AppState
 
-    @State private var friendRequests = FriendRequest.samples
-    @State private var groupRequests = GroupJoinRequest.samples
+    private var friendRequests: [FriendRequest] {
+        appState.friendRequests
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
 
-                    // ── 入群申请 ──────────────────────────────────────────
-                    if !groupRequests.isEmpty {
-                        sectionCard(title: "入群申请", systemImage: "person.3.fill") {
-                            ForEach(Array(groupRequests.enumerated()), id: \.element.id) { idx, req in
-                                GroupJoinRequestRow(request: req) { action in
-                                    handleGroup(id: req.id, action: action)
-                                }
-                                if idx < groupRequests.count - 1 {
-                                    Divider().padding(.leading, 74).padding(.trailing, 16)
-                                }
-                            }
-                        }
-                    }
-
                     // ── 好友申请 ──────────────────────────────────────────
                     if !friendRequests.isEmpty {
                         sectionCard(title: "好友申请", systemImage: "person.badge.plus.fill") {
                             ForEach(Array(friendRequests.enumerated()), id: \.element.id) { idx, req in
                                 FriendRequestRow(request: req) { action in
-                                    handleFriend(id: req.id, action: action)
+                                    handleFriend(request: req, action: action)
                                 }
                                 if idx < friendRequests.count - 1 {
                                     Divider().padding(.leading, 74).padding(.trailing, 16)
@@ -45,7 +33,7 @@ struct FriendRequestsView: View {
                         }
                     }
 
-                    if friendRequests.isEmpty && groupRequests.isEmpty {
+                    if friendRequests.isEmpty {
                         emptyState
                     }
                 }
@@ -62,6 +50,9 @@ struct FriendRequestsView: View {
                         .foregroundStyle(BlahajTheme.primaryMid)
                 }
             }
+        }
+        .task {
+            await appState.refreshFriendRequests()
         }
     }
 
@@ -98,15 +89,14 @@ struct FriendRequestsView: View {
 
     // MARK: - Actions
 
-    private func handleFriend(id: UUID, action: RequestAction) {
-        withAnimation(.spring(response: 0.3)) {
-            friendRequests.removeAll { $0.id == id }
-        }
-    }
-
-    private func handleGroup(id: UUID, action: RequestAction) {
-        withAnimation(.spring(response: 0.3)) {
-            groupRequests.removeAll { $0.id == id }
+    private func handleFriend(request: FriendRequest, action: RequestAction) {
+        Task {
+            switch action {
+            case .accept:
+                await appState.acceptFriendRequest(request)
+            case .reject:
+                await appState.rejectFriendRequest(request)
+            }
         }
     }
 
@@ -189,76 +179,6 @@ struct FriendRequestRow: View {
     }
 }
 
-// MARK: - Group Join Request Row
-
-struct GroupJoinRequestRow: View {
-    let request: GroupJoinRequest
-    let onAction: (RequestAction) -> Void
-
-    var body: some View {
-        HStack(spacing: 14) {
-            AvatarView(
-                imageName: request.from.avatarName,
-                displayName: request.from.name,
-                size: 46,
-                showOnlineDot: false,
-                isOnline: false
-            )
-
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 4) {
-                    Text(request.from.name)
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(BlahajTheme.textPrimary)
-                    Text("申请加入")
-                        .font(.system(size: 12))
-                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.5))
-                }
-                Text(request.groupName)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(BlahajTheme.primaryMid)
-                    .lineLimit(1)
-                if !request.message.isEmpty {
-                    Text(request.message)
-                        .font(.system(size: 12))
-                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.55))
-                        .lineLimit(1)
-                }
-                Text(request.date.relativeString)
-                    .font(.system(size: 11))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.35))
-            }
-
-            Spacer()
-
-            actionButtons
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-    }
-
-    private var actionButtons: some View {
-        HStack(spacing: 8) {
-            Button(action: { onAction(.reject) }) {
-                Text("拒绝")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.55))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(BlahajTheme.pageBg, in: RoundedRectangle(cornerRadius: 10))
-            }
-            Button(action: { onAction(.accept) }) {
-                Text("同意")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(BlahajTheme.primary, in: RoundedRectangle(cornerRadius: 10))
-            }
-        }
-    }
-}
-
 // MARK: - Date Helper
 
 private extension Date {
@@ -273,4 +193,5 @@ private extension Date {
 
 #Preview {
     FriendRequestsView()
+        .environmentObject(AppState())
 }
