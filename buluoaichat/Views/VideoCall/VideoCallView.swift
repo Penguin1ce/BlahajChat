@@ -145,7 +145,7 @@ struct VideoCallView: View {
     // MARK: - Background
     private var background: some View {
         LinearGradient(
-            colors: [Color(hex: "#0C1829"), Color(hex: "#1A2640"), Color(hex: "#080D18")],
+            colors: [BlahajTheme.callBgTop, BlahajTheme.callBgMid, BlahajTheme.callBgBottom],
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
@@ -197,7 +197,7 @@ struct VideoCallView: View {
     private var localPreview: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(hex: "#1C2C42"))
+                .fill(BlahajTheme.callSurface)
                 .frame(width: 92, height: 128)
 
             if manager.isCameraOn {
@@ -234,7 +234,7 @@ struct VideoCallView: View {
             // 连接状态指示
             if manager.state == .connected {
                 HStack(spacing: 6) {
-                    Circle().fill(Color.green).frame(width: 7, height: 7)
+                    Circle().fill(BlahajTheme.online).frame(width: 7, height: 7)
                     Text("视频通话中")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.8))
@@ -278,7 +278,7 @@ struct VideoCallView: View {
             Button(action: { manager.endCall() }) {
                 VStack(spacing: 7) {
                     ZStack {
-                        Circle().fill(Color.red).frame(width: 66, height: 66)
+                        Circle().fill(BlahajTheme.danger).frame(width: 66, height: 66)
                         Image(systemName: "phone.down.fill")
                             .font(.system(size: 26, weight: .semibold))
                             .foregroundStyle(.white)

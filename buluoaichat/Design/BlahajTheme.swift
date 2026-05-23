@@ -2,51 +2,62 @@
 //  BlahajTheme.swift
 //  buluaichat
 //
-//  "布罗艾" 统一调色板 — 以 IKEA Blåhaj 鲨鱼为灵感
+//  "布罗艾" 统一调色板 — 清爽 Telegram 感 + Blåhaj 蓝色气质
 //
 
 import SwiftUI
 
 enum BlahajTheme {
 
-    // MARK: - 主色 Shark Blue（鲨鱼背部深蓝）
-    // 用于：标题、主要文字、图标
+    // MARK: - 主色 Telegram Blue
 
-    /// 深蓝，标题 / 重要文字
-    static let primary      = Color(hex: "#2B5F9E")
-    /// 中蓝，副标题 / 次级图标
-    static let primaryMid   = Color(hex: "#4D8BC4")
-    /// 浅蓝，页面背景
-    static let primaryLight = Color(hex: "#D6EAF5")
+    /// Telegram 风格主蓝，CTA / 选中态 / 发送气泡
+    static let primary      = Color(hex: "#229ED9")
+    /// 柔和中蓝，图标 / 辅助强调
+    static let primaryMid   = Color(hex: "#5BB8E8")
+    /// 浅蓝灰页面背景
+    static let primaryLight = Color(hex: "#F2F7FB")
 
-    // MARK: - 辅助色 Shark White（鲨鱼肚子奶白）
-    // 用于：卡片背景、输入框底色
+    // MARK: - 表面与文本
 
-    /// 奶白，卡片 / 输入框背景
-    static let surface      = Color(hex: "#F0E8D8")
-    /// 纯白，最浅层背景（如底部卡片）
+    /// 输入框 / 次级控件背景
+    static let surface      = Color(hex: "#F7FAFC")
+    /// 卡片 / 列表背景
     static let background   = Color(hex: "#FFFFFF")
+    /// 细分隔线
+    static let separator    = Color(hex: "#DCE8F0")
+    /// 主文字
+    static let ink          = Color(hex: "#17212B")
+    /// 次级文字
+    static let slate        = Color(hex: "#6D8494")
 
-    // MARK: - 点缀色 Shark Pink（鲨鱼嘴肉粉）
-    // 用于：CTA 主按钮、徽标、关键提醒
+    // MARK: - 状态与强调
 
-    /// 深粉，CTA 按钮 / 重要动作
-    static let accent       = Color(hex: "#ffdada")
-    /// 浅粉，提示 Badge / 柔和标记
-    static let accentLight  = Color(hex: "#F2BFCA")
+    static let accent       = primary
+    static let accentLight  = Color(hex: "#E6F5FC")
+    static let online       = Color(hex: "#31C48D")
+    static let danger       = Color(hex: "#FF5D5D")
+    static let warning      = Color(hex: "#F6A63A")
+    static let shadow       = Color(hex: "#17324D")
+    static let bubbleIn     = Color(hex: "#FFFFFF")
+    static let bubbleOut    = Color(hex: "#35A8E6")
+    static let callBgTop    = Color(hex: "#0B1624")
+    static let callBgMid    = Color(hex: "#102B3E")
+    static let callBgBottom = Color(hex: "#070C14")
+    static let callSurface  = Color(hex: "#1B2D3F")
 
     // MARK: - 语义颜色（方便调用）
-    static let textPrimary   = primary       // 主文字
-    static let textSecondary = primaryMid    // 次级文字 / 占位
-    static let cta           = accent        // 所有 CTA 按钮统一用粉色
-    static let cardBg        = background    // 底部卡片
-    static let pageBg        = primaryLight  // 页面蓝色背景
+    static let textPrimary   = ink
+    static let textSecondary = slate
+    static let cta           = accent
+    static let cardBg        = background
+    static let pageBg        = primaryLight
 
     // MARK: - 圆角规范
-    static let radiusCard    : CGFloat = 42   // 卡片顶部大圆角
-    static let radiusInput   : CGFloat = 18   // 输入框圆角
-    static let radiusButton  : CGFloat = 18   // 按钮圆角
-    static let radiusAvatar  : CGFloat = 28   // 头像 / 图片圆角
+    static let radiusCard    : CGFloat = 28
+    static let radiusInput   : CGFloat = 16
+    static let radiusButton  : CGFloat = 16
+    static let radiusAvatar  : CGFloat = 20
 }
 
 // MARK: - Color Hex 扩展

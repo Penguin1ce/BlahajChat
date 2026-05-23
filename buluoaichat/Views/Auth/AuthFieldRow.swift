@@ -20,19 +20,25 @@ struct AuthFieldRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(accentColor)
-                .frame(width: 20)
+                .frame(width: 30, height: 30)
+                .background(BlahajTheme.accentLight.opacity(0.75), in: Circle())
 
             if isSecure {
                 SecureField(placeholder, text: $text)
+                    .font(.system(size: 15))
+                    .foregroundStyle(BlahajTheme.textPrimary)
             } else {
                 TextField(placeholder, text: $text)
+                    .font(.system(size: 15))
+                    .foregroundStyle(BlahajTheme.textPrimary)
                     .keyboardType(keyboardType)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 15)
+        .padding(.vertical, 13)
     }
 }

@@ -16,32 +16,37 @@ struct FriendRequestsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
+            ZStack {
+                BlahajScreenBackground()
 
-                    // ── 好友申请 ──────────────────────────────────────────
-                    if !friendRequests.isEmpty {
-                        sectionCard(title: "好友申请", systemImage: "person.badge.plus.fill") {
-                            ForEach(Array(friendRequests.enumerated()), id: \.element.id) { idx, req in
-                                FriendRequestRow(request: req) { action in
-                                    handleFriend(request: req, action: action)
-                                }
-                                if idx < friendRequests.count - 1 {
-                                    Divider().padding(.leading, 74).padding(.trailing, 16)
+                ScrollView {
+                    VStack(spacing: 16) {
+                        if !friendRequests.isEmpty {
+                            sectionCard(title: "好友申请", systemImage: "person.badge.plus.fill") {
+                                ForEach(Array(friendRequests.enumerated()), id: \.element.id) { idx, req in
+                                    FriendRequestRow(request: req) { action in
+                                        handleFriend(request: req, action: action)
+                                    }
+                                    if idx < friendRequests.count - 1 {
+                                        Rectangle()
+                                            .fill(BlahajTheme.separator.opacity(0.72))
+                                            .frame(height: 0.5)
+                                            .padding(.leading, 74)
+                                            .padding(.trailing, 16)
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if friendRequests.isEmpty {
-                        emptyState
+                        if friendRequests.isEmpty {
+                            emptyState
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
             }
-            .background(BlahajTheme.pageBg)
             .navigationTitle("申请通知")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -62,29 +67,15 @@ struct FriendRequestsView: View {
     private func sectionCard<Content: View>(
         title: String,
         systemImage: String,
-        @ViewBuilder content: () -> Content
+        @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 7) {
-                Image(systemName: systemImage)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(BlahajTheme.primaryMid)
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.7))
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 8)
+        VStack(alignment: .leading, spacing: 10) {
+            BlahajSectionHeader(title: title, icon: systemImage)
 
-            VStack(spacing: 0) {
+            BlahajListGroup {
                 content()
             }
-            .padding(.bottom, 4)
         }
-        .background(BlahajTheme.cardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: BlahajTheme.primary.opacity(0.06), radius: 12, x: 0, y: 3)
     }
 
     // MARK: - Actions
@@ -103,16 +94,11 @@ struct FriendRequestsView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "tray")
-                .font(.system(size: 42))
-                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.28))
-            Text("暂无新的申请")
-                .font(.subheadline)
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.45))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 64)
+        BlahajEmptyState(
+            icon: "tray",
+            title: "暂无新的申请",
+            message: "好友申请会出现在这里"
+        )
     }
 }
 
@@ -138,15 +124,15 @@ struct FriendRequestRow: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(request.from.name)
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(BlahajTheme.textPrimary)
                 Text(request.message)
                     .font(.system(size: 12))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.55))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.74))
                     .lineLimit(1)
                 Text(request.date.relativeString)
                     .font(.system(size: 11))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.35))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.55))
             }
 
             Spacer()
@@ -162,10 +148,10 @@ struct FriendRequestRow: View {
             Button(action: { onAction(.reject) }) {
                 Text("拒绝")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.55))
+                    .foregroundStyle(BlahajTheme.textSecondary)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(BlahajTheme.pageBg, in: RoundedRectangle(cornerRadius: 10))
+                    .background(BlahajTheme.surface, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             Button(action: { onAction(.accept) }) {
                 Text("同意")
@@ -173,9 +159,10 @@ struct FriendRequestRow: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(BlahajTheme.primary, in: RoundedRectangle(cornerRadius: 10))
+                    .background(BlahajTheme.primary, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
         }
+        .buttonStyle(.plain)
     }
 }
 

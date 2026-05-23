@@ -31,9 +31,9 @@ struct AvatarView: View {
 
             if showOnlineDot {
                 Circle()
-                    .fill(isOnline ? Color.green : Color.gray.opacity(0.4))
+                    .fill(isOnline ? BlahajTheme.online : BlahajTheme.textSecondary.opacity(0.36))
                     .frame(width: size * 0.27, height: size * 0.27)
-                    .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                    .overlay(Circle().stroke(BlahajTheme.cardBg, lineWidth: 2))
                     .offset(x: 1, y: 1)
             }
         }

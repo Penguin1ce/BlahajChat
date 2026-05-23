@@ -48,101 +48,70 @@ struct ContactsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
+        ZStack {
+            BlahajScreenBackground()
 
-                // ── 标题行 ─────────────────────────────────────────────
-                HStack(alignment: .center) {
-                    Text("通讯录")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(BlahajTheme.textPrimary)
-                    Spacer()
-                    Button(action: { showRequests = true }) {
-                        ZStack(alignment: .topTrailing) {
-                            Image(systemName: "person.badge.plus.fill")
-                                .font(.system(size: 24))
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(BlahajTheme.primaryMid)
-                            if totalRequests > 0 {
-                                Text("\(min(totalRequests, 99))")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 4)
-                                    .padding(.vertical, 1.5)
-                                    .background(Color.red, in: Capsule())
-                                    .offset(x: 8, y: -4)
+            ScrollView {
+                VStack(spacing: 14) {
+                    BlahajPageHeader(
+                        title: "通讯录",
+                        subtitle: "\(filteredContacts.count) 位联系人 · \(filteredGroups.count) 个群聊",
+                        actionIcon: "person.badge.plus",
+                        badgeCount: totalRequests,
+                        action: { showRequests = true }
+                    )
+
+                    BlahajSearchBar(placeholder: "搜索联系人或群聊", text: $searchText)
+
+                    if !filteredGroups.isEmpty {
+                        BlahajSectionHeader(title: "群聊", icon: "person.3.fill")
+
+                        BlahajListGroup {
+                            ForEach(Array(filteredGroups.enumerated()), id: \.element.id) { idx, group in
+                                GroupContactRow(group: group) {
+                                    selectedConversation = group
+                                }
+                                if idx < filteredGroups.count - 1 {
+                                    listDivider
+                                }
                             }
                         }
                     }
-                }
-                .padding(.horizontal, 4)
 
-                // ── 搜索栏 ─────────────────────────────────────────────
-                searchBar
+                    if !filteredContacts.isEmpty {
+                        BlahajSectionHeader(title: "联系人", icon: "person.fill")
 
-                // ── 群聊分组 ───────────────────────────────────────────
-                if !filteredGroups.isEmpty {
-                    sectionHeader(title: "群聊", icon: "person.3.fill")
+                        ForEach(groupedContacts, id: \.key) { section in
+                            BlahajListGroup {
+                                Text(section.key)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(BlahajTheme.primary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 16)
+                                    .padding(.top, 12)
+                                    .padding(.bottom, 6)
 
-                    VStack(spacing: 0) {
-                        ForEach(Array(filteredGroups.enumerated()), id: \.element.id) { idx, group in
-                            GroupContactRow(group: group) {
-                                selectedConversation = group
-                            }
-                            if idx < filteredGroups.count - 1 {
-                                Divider()
-                                    .padding(.leading, 74)
-                                    .padding(.trailing, 16)
-                            }
-                        }
-                    }
-                    .background(BlahajTheme.cardBg)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .shadow(color: BlahajTheme.primary.opacity(0.06), radius: 12, x: 0, y: 3)
-                }
-
-                // ── 联系人字母分组 ─────────────────────────────────────
-                if !filteredContacts.isEmpty {
-                    sectionHeader(title: "联系人", icon: "person.fill")
-
-                    ForEach(groupedContacts, id: \.key) { section in
-                        VStack(alignment: .leading, spacing: 0) {
-                            // 字母标题
-                            Text(section.key)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.6))
-                                .padding(.horizontal, 16)
-                                .padding(.top, 12)
-                                .padding(.bottom, 6)
-
-                            VStack(spacing: 0) {
                                 ForEach(Array(section.value.enumerated()), id: \.element.id) { idx, contact in
                                     ContactRow(contact: contact) {
                                         openChat(with: contact)
                                     }
                                     if idx < section.value.count - 1 {
-                                        Divider()
-                                            .padding(.leading, 74)
-                                            .padding(.trailing, 16)
+                                        listDivider
                                     }
                                 }
                             }
                         }
-                        .background(BlahajTheme.cardBg)
-                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                        .shadow(color: BlahajTheme.primary.opacity(0.06), radius: 12, x: 0, y: 3)
+                    }
+
+                    if isEmpty {
+                        emptyState
                     }
                 }
-
-                if isEmpty {
-                    emptyState
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 18)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 16)
         }
-        .background(BlahajTheme.pageBg)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $showRequests) {
             FriendRequestsView()
@@ -158,61 +127,22 @@ struct ContactsView: View {
         }
     }
 
-    // MARK: - Section Header
-
-    private func sectionHeader(title: String, icon: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(BlahajTheme.primaryMid)
-            Text(title)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.7))
-            Spacer()
-        }
-        .padding(.horizontal, 4)
-        .padding(.top, 4)
-    }
-
-    // MARK: - Search Bar
-
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.4))
-
-            TextField("搜索联系人或群聊", text: $searchText)
-                .font(.system(size: 15))
-                .submitLabel(.search)
-
-            if !searchText.isEmpty {
-                Button(action: { searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.38))
-                }
-                .transition(.scale.combined(with: .opacity))
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-        .animation(.spring(response: 0.22), value: searchText.isEmpty)
+    private var listDivider: some View {
+        Rectangle()
+            .fill(BlahajTheme.separator.opacity(0.72))
+            .frame(height: 0.5)
+            .padding(.leading, 74)
+            .padding(.trailing, 16)
     }
 
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "person.2.slash")
-                .font(.system(size: 42))
-                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.28))
-            Text(searchText.isEmpty ? "暂无联系人或群聊" : "没有找到相关联系人或群聊")
-                .font(.subheadline)
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.45))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 56)
+        BlahajEmptyState(
+            icon: "person.2.slash",
+            title: searchText.isEmpty ? "暂无联系人或群聊" : "没有找到相关联系人或群聊",
+            message: searchText.isEmpty ? "好友和群聊会集中展示在这里" : "试试搜索昵称或邮箱"
+        )
     }
 
     private func openChat(with contact: Contact) {
@@ -236,29 +166,32 @@ struct GroupContactRow: View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: BlahajTheme.radiusAvatar * 0.6, style: .continuous)
-                    .fill(BlahajTheme.primaryMid.opacity(0.15))
+                    .fill(BlahajTheme.accentLight)
                     .frame(width: 46, height: 46)
                 Image(systemName: "person.3.fill")
                     .font(.system(size: 18))
-                    .foregroundStyle(BlahajTheme.primaryMid)
+                    .foregroundStyle(BlahajTheme.primary)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(group.groupName ?? "群聊")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(BlahajTheme.textPrimary)
                 Text(memberCount > 0 ? "\(memberCount) 位成员" : "群聊")
                     .font(.system(size: 12))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.52))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.72))
             }
 
             Spacer()
 
             Button(action: onMessage) {
                 Image(systemName: "message.fill")
-                    .font(.system(size: 17))
-                    .foregroundStyle(BlahajTheme.primaryMid)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(BlahajTheme.primary)
+                    .frame(width: 34, height: 34)
+                    .background(BlahajTheme.accentLight, in: Circle())
             }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 11)
@@ -284,27 +217,33 @@ struct ContactRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(contact.name)
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(BlahajTheme.textPrimary)
                 Text(contact.subtitle.isEmpty ? contact.email : contact.subtitle)
                     .font(.system(size: 12))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.52))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.72))
+                    .lineLimit(1)
             }
 
             Spacer()
 
-            HStack(spacing: 18) {
+            HStack(spacing: 8) {
                 Button(action: onMessage) {
                     Image(systemName: "message.fill")
-                        .font(.system(size: 17))
-                        .foregroundStyle(BlahajTheme.primaryMid)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(BlahajTheme.primary)
+                        .frame(width: 34, height: 34)
+                        .background(BlahajTheme.accentLight, in: Circle())
                 }
                 Button(action: {}) {
                     Image(systemName: "phone.fill")
-                        .font(.system(size: 17))
-                        .foregroundStyle(BlahajTheme.primaryMid)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(BlahajTheme.primary)
+                        .frame(width: 34, height: 34)
+                        .background(BlahajTheme.surface, in: Circle())
                 }
             }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 11)

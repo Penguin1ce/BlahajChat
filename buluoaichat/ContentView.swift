@@ -43,14 +43,16 @@ struct ContentView: View {
 private struct LaunchingView: View {
     var body: some View {
         ZStack {
-            BlahajTheme.pageBg.ignoresSafeArea()
+            BlahajScreenBackground()
             VStack(spacing: 18) {
                 Image("frontui")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 96, height: 96)
-                    .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusAvatar, style: .continuous))
-                    .shadow(color: BlahajTheme.primary.opacity(0.18), radius: 14, x: 0, y: 6)
+                    .padding(7)
+                    .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .shadow(color: BlahajTheme.shadow.opacity(0.10), radius: 14, x: 0, y: 6)
 
                 ProgressView()
                     .tint(BlahajTheme.primary)

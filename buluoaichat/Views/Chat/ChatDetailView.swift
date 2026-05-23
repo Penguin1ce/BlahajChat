@@ -63,7 +63,7 @@ struct ChatDetailView: View {
                 }
             }
         }
-        .background(BlahajTheme.pageBg.ignoresSafeArea())
+        .background(BlahajScreenBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.visible, for: .navigationBar)
         .toolbar {
@@ -72,18 +72,20 @@ struct ChatDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 8) {
-                    // 视频通话按钮
                     Button(action: { showVideoCall = true }) {
                         Image(systemName: "video.fill")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(BlahajTheme.primaryMid)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(BlahajTheme.primary)
+                            .frame(width: 32, height: 32)
+                            .background(BlahajTheme.accentLight, in: Circle())
                     }
                     Button(action: {}) {
                         Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 17))
-                            .foregroundStyle(BlahajTheme.primaryMid)
+                            .font(.system(size: 19, weight: .medium))
+                            .foregroundStyle(BlahajTheme.primary)
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .onAppear {
@@ -116,16 +118,16 @@ struct ChatDetailView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(BlahajTheme.textPrimary)
                     .lineLimit(1)
-        if conversation.isGroup {
-            Text("群聊")
+                if conversation.isGroup {
+                    Text("群聊")
                         .font(.system(size: 11))
-                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.5))
+                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.72))
                 } else {
                     Text(conversation.contact?.isOnline == true ? "在线" : "离线")
                         .font(.system(size: 11))
                         .foregroundStyle(
                             conversation.contact?.isOnline == true
-                                ? Color.green : BlahajTheme.textSecondary.opacity(0.42)
+                                ? BlahajTheme.online : BlahajTheme.textSecondary.opacity(0.62)
                         )
                 }
             }
@@ -171,17 +173,14 @@ struct MessageBubbleView: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
-                    LinearGradient(
-                        colors: [BlahajTheme.primaryMid, BlahajTheme.primary],
-                        startPoint: .topLeading, endPoint: .bottomTrailing
-                    ),
+                    BlahajTheme.bubbleOut,
                     in: UnevenRoundedRectangle(
                         topLeadingRadius: 18, bottomLeadingRadius: 18,
                         bottomTrailingRadius: 4, topTrailingRadius: 18,
                         style: .continuous
                     )
                 )
-                .shadow(color: BlahajTheme.primary.opacity(0.26), radius: 8, x: 0, y: 3)
+                .shadow(color: BlahajTheme.primary.opacity(0.14), radius: 8, x: 0, y: 4)
 
             HStack(spacing: 3) {
                 Image(systemName: deliveryIcon)
@@ -189,7 +188,7 @@ struct MessageBubbleView: View {
                 Text(message.timestamp.messageTime)
                     .font(.system(size: 10))
             }
-            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.42))
+            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.64))
             .padding(.trailing, 4)
         }
     }
@@ -221,19 +220,31 @@ struct MessageBubbleView: View {
                     .foregroundStyle(BlahajTheme.textPrimary)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
-                    .background(BlahajTheme.cardBg)
-                    .clipShape(
-                        UnevenRoundedRectangle(
-                            topLeadingRadius: 18, bottomLeadingRadius: 4,
-                            bottomTrailingRadius: 18, topTrailingRadius: 18,
+                    .background(
+                        BlahajTheme.bubbleIn,
+                        in: UnevenRoundedRectangle(
+                            topLeadingRadius: 18,
+                            bottomLeadingRadius: 4,
+                            bottomTrailingRadius: 18,
+                            topTrailingRadius: 18,
                             style: .continuous
                         )
                     )
-                    .shadow(color: BlahajTheme.primary.opacity(0.07), radius: 6, x: 0, y: 2)
+                    .overlay(
+                        UnevenRoundedRectangle(
+                            topLeadingRadius: 18,
+                            bottomLeadingRadius: 4,
+                            bottomTrailingRadius: 18,
+                            topTrailingRadius: 18,
+                            style: .continuous
+                        )
+                        .stroke(BlahajTheme.separator.opacity(0.65), lineWidth: 0.5)
+                    )
+                    .shadow(color: BlahajTheme.shadow.opacity(0.04), radius: 7, x: 0, y: 3)
 
                 Text(message.timestamp.messageTime)
                     .font(.system(size: 10))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.42))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.64))
                     .padding(.leading, 4)
             }
         }
@@ -255,10 +266,11 @@ struct MessageInputBar: View {
         HStack(alignment: .bottom, spacing: 10) {
             Button(action: {}) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(BlahajTheme.primaryMid)
+                    .font(.system(size: 26))
+                    .foregroundStyle(BlahajTheme.primary)
             }
             .frame(width: 36, height: 36)
+            .buttonStyle(.plain)
 
             TextField("发送消息…", text: $text, axis: .vertical)
                 .lineLimit(1...5)
@@ -267,8 +279,12 @@ struct MessageInputBar: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 9)
                 .background(
-                    BlahajTheme.pageBg,
+                    BlahajTheme.surface,
                     in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(BlahajTheme.separator.opacity(0.72), lineWidth: 0.5)
                 )
 
             Button(action: onSend) {
@@ -282,6 +298,7 @@ struct MessageInputBar: View {
             }
             .disabled(!canSend)
             .frame(width: 36, height: 36)
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)

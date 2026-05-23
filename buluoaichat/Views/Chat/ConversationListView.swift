@@ -20,39 +20,31 @@ struct ConversationListView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
+        ZStack {
+            BlahajScreenBackground()
 
-                // ── 标题行 ────────────────────────────────────────────
-                HStack(alignment: .center) {
-                    Text("消息")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(BlahajTheme.textPrimary)
-                    Spacer()
-                    Button(action: refresh) {
-                        Image(systemName: "square.and.pencil.circle.fill")
-                            .font(.system(size: 28))
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundStyle(BlahajTheme.primaryMid)
+            ScrollView {
+                VStack(spacing: 14) {
+                    BlahajPageHeader(
+                        title: "消息",
+                        subtitle: filtered.isEmpty ? "保持连接，轻松开始对话" : "\(filtered.count) 个会话",
+                        actionIcon: "square.and.pencil",
+                        action: refresh
+                    )
+
+                    BlahajSearchBar(placeholder: "搜索聊天", text: $searchText)
+
+                    if filtered.isEmpty {
+                        emptyState
+                    } else {
+                        conversationList
                     }
                 }
-                .padding(.horizontal, 4)
-
-                // ── 搜索栏 ────────────────────────────────────────────
-                searchBar
-
-                // ── 会话列表 ──────────────────────────────────────────
-                if filtered.isEmpty {
-                    emptyState
-                } else {
-                    conversationList
-                }
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 18)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 16)
         }
-        .background(BlahajTheme.pageBg)
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(for: Conversation.self) { conv in
             ChatDetailView(conversation: conv)
@@ -63,34 +55,9 @@ struct ConversationListView: View {
         }
     }
 
-    // MARK: - Search Bar
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.4))
-
-            TextField("搜索聊天", text: $searchText)
-                .font(.system(size: 15))
-                .submitLabel(.search)
-
-            if !searchText.isEmpty {
-                Button(action: { searchText = "" }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(BlahajTheme.textSecondary.opacity(0.38))
-                }
-                .transition(.scale.combined(with: .opacity))
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
-        .animation(.spring(response: 0.22), value: searchText.isEmpty)
-    }
-
     // MARK: - Conversation List Card
     private var conversationList: some View {
-        LazyVStack(spacing: 0) {
+        BlahajListGroup {
             ForEach(filtered) { conv in
                 NavigationLink(value: conv) {
                     ConversationRow(conversation: conv)
@@ -98,29 +65,23 @@ struct ConversationListView: View {
                 .buttonStyle(.plain)
 
                 if conv.id != filtered.last?.id {
-                    Divider()
+                    Rectangle()
+                        .fill(BlahajTheme.separator.opacity(0.72))
+                        .frame(height: 0.5)
                         .padding(.leading, 82)
                         .padding(.trailing, 16)
                 }
             }
         }
-        .background(BlahajTheme.cardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: BlahajTheme.primary.opacity(0.07), radius: 18, x: 0, y: 4)
     }
 
     // MARK: - Empty State
     private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 42))
-                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.28))
-            Text(searchText.isEmpty ? "暂无会话" : "没有找到相关聊天")
-                .font(.subheadline)
-                .foregroundStyle(BlahajTheme.textSecondary.opacity(0.45))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 56)
+        BlahajEmptyState(
+            icon: "bubble.left.and.bubble.right",
+            title: searchText.isEmpty ? "暂无会话" : "没有找到相关聊天",
+            message: searchText.isEmpty ? "新的聊天会出现在这里" : "试试更短的关键词"
+        )
     }
 
     private func refresh() {
@@ -143,7 +104,7 @@ struct ConversationRow: View {
             AvatarView(
                 imageName: conversation.displayAvatarName,
                 displayName: conversation.displayName,
-                size: 52,
+                size: 54,
                 showOnlineDot: !conversation.isGroup,
                 isOnline: conversation.contact?.isOnline ?? false,
                 isGroup: conversation.isGroup
@@ -152,43 +113,54 @@ struct ConversationRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(conversation.displayName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(BlahajTheme.textPrimary)
                         .lineLimit(1)
                     Spacer()
                     if let lastMessageAt = conversation.lastMessageAt {
                         Text(lastMessageAt.chatListTime)
                             .font(.system(size: 12))
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.48))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.72))
                     }
                 }
 
-                HStack(spacing: 4) {
+                HStack(spacing: 6) {
+                    if conversation.pinned {
+                        Image(systemName: "pin.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.56))
+                    }
+
                     if let lastMessageText = conversation.lastMessageText {
                         Text(lastMessageText)
                             .font(.system(size: 14))
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.62))
+                            .foregroundStyle(BlahajTheme.textSecondary)
                             .lineLimit(1)
                     } else {
                         Text(conversation.isGroup ? "群聊已创建" : "开始聊天吧")
                             .font(.system(size: 14))
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.46))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.64))
                             .lineLimit(1)
                     }
                     Spacer()
+                    if conversation.muted {
+                        Image(systemName: "bell.slash.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.48))
+                    }
                     if conversation.unreadCount > 0 {
                         Text("\(conversation.unreadCount)")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
+                            .padding(.vertical, 4)
                             .background(BlahajTheme.primary, in: Capsule())
                     }
                 }
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 11)
         .contentShape(Rectangle())
     }
 }

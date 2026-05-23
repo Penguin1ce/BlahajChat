@@ -16,30 +16,27 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    private let typewriterFull = "Ciallo (∠·ω )⌒★"
-    @State private var typewriterText = ""
-
     var body: some View {
         ZStack(alignment: .bottom) {
 
-            BlahajTheme.pageBg.ignoresSafeArea()
+            BlahajScreenBackground()
 
             VStack(spacing: 0) {
-                heroSection.padding(.top, 24)
+                heroSection.padding(.top, 30)
                 Spacer()
             }
 
             // 底部白卡
-            VStack(spacing: 20) {
+            VStack(spacing: 18) {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("欢迎回来")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundStyle(BlahajTheme.textPrimary)
-                        Text("登录账号，继续你的海洋之旅")
+                        Text("登录账号，继续聊天")
                             .font(.footnote)
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.8))
+                            .foregroundStyle(BlahajTheme.textSecondary)
                     }
                     Spacer()
                 }
@@ -68,11 +65,15 @@ struct LoginView: View {
                 .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
                 .animation(.none, value: email)
                 .animation(.none, value: password)
+                .overlay(
+                    RoundedRectangle(cornerRadius: BlahajTheme.radiusInput, style: .continuous)
+                        .stroke(BlahajTheme.separator.opacity(0.55), lineWidth: 0.5)
+                )
 
                 if let errorMessage {
                     HStack(spacing: 6) {
                         Image(systemName: "exclamationmark.circle.fill")
-                            .foregroundStyle(BlahajTheme.primary)
+                            .foregroundStyle(BlahajTheme.danger)
                         Text(errorMessage)
                             .foregroundStyle(BlahajTheme.textSecondary)
                             .lineLimit(2)
@@ -82,23 +83,12 @@ struct LoginView: View {
                     .padding(.horizontal, 4)
                 }
 
-                // CTA 登录按钮 — Shark Pink
-                Button(action: login) {
-                    Group {
-                        if isLoading {
-                            ProgressView().tint(.white)
-                        } else {
-                            Text("登 录")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(BlahajTheme.cta)
-                    .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusButton, style: .continuous))
+                // CTA 登录按钮
+                BlahajPrimaryButton(isLoading: isLoading, action: login) {
+                    Text("登录")
                 }
                 .disabled(isLoading || email.isEmpty || password.isEmpty)
+                .opacity(isLoading || email.isEmpty || password.isEmpty ? 0.55 : 1)
 
                 // 注册入口
                 Button(action: { showRegister = true }) {
@@ -111,6 +101,7 @@ struct LoginView: View {
                     }
                     .font(.subheadline)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 24)
             .padding(.top, 32)
@@ -126,7 +117,7 @@ struct LoginView: View {
                 )
                 .fill(BlahajTheme.cardBg)
                 .ignoresSafeArea(edges: .bottom)
-                .shadow(color: BlahajTheme.primary.opacity(0.1), radius: 20, x: 0, y: -4)
+                .shadow(color: BlahajTheme.shadow.opacity(0.08), radius: 24, x: 0, y: -8)
             }
         }
         .sheet(isPresented: $showRegister) {
@@ -141,39 +132,25 @@ struct LoginView: View {
             Image("frontui")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 118, height: 118)
-                .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusAvatar, style: .continuous))
-                .shadow(color: BlahajTheme.primary.opacity(0.2), radius: 14, x: 0, y: 7)
-
-            Text(typewriterText)
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(BlahajTheme.textPrimary)
-                .onAppear { startTypewriter() }
+                .frame(width: 104, height: 104)
+                .padding(8)
+                .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                .shadow(color: BlahajTheme.shadow.opacity(0.10), radius: 16, x: 0, y: 8)
 
             VStack(spacing: 5) {
                 Text("Blåhaj Chat")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundStyle(BlahajTheme.textPrimary)
                 Text("Blåhaj Ocean Friends")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(BlahajTheme.primaryMid)
+                    .foregroundStyle(BlahajTheme.primary)
                     .tracking(1.6)
             }
 
-            Text("布罗艾的海洋朋友")
+            Text("和重要的人保持联系")
                 .font(.subheadline)
-                .foregroundStyle(BlahajTheme.primaryMid.opacity(0.72))
-        }
-    }
-
-    // MARK: - Typewriter
-    private func startTypewriter() {
-        typewriterText = ""
-        let characters = Array(typewriterFull)
-        for (i, char) in characters.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
-                typewriterText.append(char)
-            }
+                .foregroundStyle(BlahajTheme.textSecondary)
         }
     }
 

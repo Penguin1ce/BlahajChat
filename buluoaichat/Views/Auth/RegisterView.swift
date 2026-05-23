@@ -24,24 +24,24 @@ struct RegisterView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
 
-            BlahajTheme.pageBg.ignoresSafeArea()
+            BlahajScreenBackground()
 
             VStack(spacing: 0) {
-                heroSection.padding(.top, 24)
+                heroSection.padding(.top, 30)
                 Spacer()
             }
 
             // 底部白卡
-            VStack(spacing: 20) {
+            VStack(spacing: 18) {
 
                 HStack {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("创建账号")
                             .font(.system(size: 22, weight: .bold, design: .rounded))
                             .foregroundStyle(BlahajTheme.textPrimary)
-                        Text("加入布罗艾的海洋朋友圈")
+                        Text("加入 Blåhaj Chat")
                             .font(.footnote)
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.8))
+                            .foregroundStyle(BlahajTheme.textSecondary)
                     }
                     Spacer()
                 }
@@ -82,6 +82,10 @@ struct RegisterView: View {
                         .animation(.none, value: emailCode)
                         .animation(.none, value: password)
                         .animation(.none, value: confirmPassword)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BlahajTheme.radiusInput, style: .continuous)
+                                .stroke(BlahajTheme.separator.opacity(0.55), lineWidth: 0.5)
+                        )
 
                         Button(action: requestCode) {
                             HStack(spacing: 7) {
@@ -97,9 +101,11 @@ struct RegisterView: View {
                             .foregroundStyle(BlahajTheme.primary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 11)
-                            .background(BlahajTheme.pageBg, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .background(BlahajTheme.accentLight, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                         }
                         .disabled(isSendingCode || email.isEmpty)
+                        .buttonStyle(.plain)
+                        .opacity(isSendingCode || email.isEmpty ? 0.62 : 1)
 
                         if let codeMessage {
                             Text(codeMessage)
@@ -112,9 +118,9 @@ struct RegisterView: View {
                         if let error = errorMessage {
                             HStack(spacing: 6) {
                                 Image(systemName: "exclamationmark.circle.fill")
-                                    .foregroundStyle(BlahajTheme.accent.opacity(0.85))
+                                    .foregroundStyle(BlahajTheme.danger)
                                 Text(error)
-                                    .foregroundStyle(BlahajTheme.accent.opacity(0.85))
+                                    .foregroundStyle(BlahajTheme.textSecondary)
                             }
                             .font(.caption)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,23 +129,12 @@ struct RegisterView: View {
                     }
                 }
 
-                // CTA 注册按钮 — Shark Pink
-                Button(action: register) {
-                    Group {
-                        if isLoading {
-                            ProgressView().tint(.white)
-                        } else {
-                            Text("注 册")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(BlahajTheme.cta)
-                    .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusButton, style: .continuous))
+                // CTA 注册按钮
+                BlahajPrimaryButton(isLoading: isLoading, action: register) {
+                    Text("注册")
                 }
                 .disabled(isLoading)
+                .opacity(isLoading ? 0.55 : 1)
 
                 // 返回登录
                 Button(action: { dismiss() }) {
@@ -152,6 +147,7 @@ struct RegisterView: View {
                     }
                     .font(.subheadline)
                 }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 24)
             .padding(.top, 32)
@@ -167,7 +163,7 @@ struct RegisterView: View {
                 )
                 .fill(BlahajTheme.cardBg)
                 .ignoresSafeArea(edges: .bottom)
-                .shadow(color: BlahajTheme.primary.opacity(0.1), radius: 20, x: 0, y: -4)
+                .shadow(color: BlahajTheme.shadow.opacity(0.08), radius: 24, x: 0, y: -8)
             }
         }
     }
@@ -178,17 +174,19 @@ struct RegisterView: View {
             Image("frontui")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 80, height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: BlahajTheme.radiusAvatar, style: .continuous))
-                .shadow(color: BlahajTheme.primary.opacity(0.15), radius: 10, x: 0, y: 5)
+                .frame(width: 84, height: 84)
+                .padding(7)
+                .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+                .shadow(color: BlahajTheme.shadow.opacity(0.10), radius: 14, x: 0, y: 7)
 
             VStack(spacing: 3) {
-                Text("布罗艾")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                Text("Blåhaj Chat")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(BlahajTheme.textPrimary)
                 Text("Blåhaj Ocean Friends")
                     .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(BlahajTheme.primaryMid)
+                    .foregroundStyle(BlahajTheme.primary)
                     .tracking(1.4)
             }
         }

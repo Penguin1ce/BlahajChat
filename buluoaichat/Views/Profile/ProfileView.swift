@@ -25,18 +25,23 @@ struct ProfileView: View {
 
     var body: some View {
         ZStack {
-            BlahajTheme.pageBg.ignoresSafeArea()
+            BlahajScreenBackground()
 
             ScrollView {
-                VStack(spacing: 22) {
-                    avatarSection.padding(.top, 4)
+                VStack(spacing: 18) {
+                    avatarSection.padding(.top, 8)
                     infoSection
                     passwordSection
                     if let errorMessage {
-                        Text(errorMessage)
-                            .font(.caption)
-                            .foregroundStyle(BlahajTheme.textSecondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: 7) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundStyle(BlahajTheme.warning)
+                            Text(errorMessage)
+                                .foregroundStyle(BlahajTheme.textSecondary)
+                                .lineLimit(2)
+                        }
+                        .font(.caption)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     saveButton
                     logoutButton
@@ -71,7 +76,7 @@ struct ProfileView: View {
                     displayName: appState.currentUser.name,
                     size: 92
                 )
-                .shadow(color: BlahajTheme.primary.opacity(0.22), radius: 14, x: 0, y: 6)
+                .shadow(color: BlahajTheme.shadow.opacity(0.12), radius: 14, x: 0, y: 6)
 
                 Button(action: {}) {
                     Image(systemName: "camera.fill")
@@ -79,9 +84,10 @@ struct ProfileView: View {
                         .foregroundStyle(.white)
                         .frame(width: 28, height: 28)
                         .background(BlahajTheme.primary, in: Circle())
-                        .overlay(Circle().stroke(Color.white, lineWidth: 2.5))
+                        .overlay(Circle().stroke(BlahajTheme.cardBg, lineWidth: 2.5))
                 }
                 .offset(x: 2, y: 2)
+                .buttonStyle(.plain)
             }
 
             VStack(spacing: 4) {
@@ -97,21 +103,27 @@ struct ProfileView: View {
         .padding(.vertical, 28)
         .background(BlahajTheme.cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-        .shadow(color: BlahajTheme.primary.opacity(0.07), radius: 14, x: 0, y: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(BlahajTheme.separator.opacity(0.55), lineWidth: 0.5)
+        )
+        .shadow(color: BlahajTheme.shadow.opacity(0.045), radius: 14, x: 0, y: 7)
     }
 
     // MARK: - 基本信息 ────────────────────────────────────────────────
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ProfileSectionHeader(title: "基本信息", icon: "person.fill")
+            BlahajSectionHeader(title: "基本信息", icon: "person.fill")
 
-            VStack(spacing: 0) {
+            BlahajListGroup {
                 ProfileFieldRow(icon: "person.fill",    label: "昵称", text: $name,  placeholder: "输入你的昵称")
-                Divider().padding(.leading, 52)
+                Rectangle()
+                    .fill(BlahajTheme.separator.opacity(0.72))
+                    .frame(height: 0.5)
+                    .padding(.leading, 64)
                 ProfileFieldRow(icon: "envelope.fill",  label: "邮箱", text: $email, placeholder: "输入你的邮箱",
                                 keyboardType: .emailAddress)
             }
-            .glassEffect(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             .animation(.none, value: name)
             .animation(.none, value: email)
         }
@@ -130,19 +142,27 @@ struct ProfileView: View {
                 }) {
                     Image(systemName: showPasswordSection ? "chevron.up.circle.fill" : "chevron.down.circle")
                         .font(.system(size: 18))
-                        .foregroundStyle(BlahajTheme.primaryMid)
+                        .foregroundStyle(BlahajTheme.primary)
                 }
+                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 4)
+            .padding(.top, 4)
 
             if showPasswordSection {
-                VStack(spacing: 0) {
+                BlahajListGroup {
                     ProfileFieldRow(icon: "lock.fill",             label: "当前密码", text: $oldPassword,     placeholder: "输入当前密码",     isSecure: true)
-                    Divider().padding(.leading, 52)
+                    Rectangle()
+                        .fill(BlahajTheme.separator.opacity(0.72))
+                        .frame(height: 0.5)
+                        .padding(.leading, 64)
                     ProfileFieldRow(icon: "lock.rotation",         label: "新密码",   text: $newPassword,     placeholder: "至少 8 位新密码",  isSecure: true)
-                    Divider().padding(.leading, 52)
+                    Rectangle()
+                        .fill(BlahajTheme.separator.opacity(0.72))
+                        .frame(height: 0.5)
+                        .padding(.leading, 64)
                     ProfileFieldRow(icon: "checkmark.shield.fill", label: "确认密码", text: $confirmPassword, placeholder: "再次输入新密码",   isSecure: true)
                 }
-                .glassEffect(in: RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .transition(.move(edge: .top).combined(with: .opacity))
                 .animation(.none, value: oldPassword)
                 .animation(.none, value: newPassword)
@@ -153,26 +173,10 @@ struct ProfileView: View {
 
     // MARK: - 保存按钮 ────────────────────────────────────────────────
     private var saveButton: some View {
-        Button(action: saveProfile) {
-            Group {
-                if isSaving {
-                    ProgressView().tint(.white)
-                } else {
-                    Text("保存修改")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 15)
-            .background(
-                LinearGradient(colors: [BlahajTheme.primaryMid, BlahajTheme.primary],
-                               startPoint: .leading, endPoint: .trailing)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        BlahajPrimaryButton(isLoading: isSaving, action: saveProfile) {
+            Text("保存修改")
         }
         .disabled(isSaving)
-        .shadow(color: BlahajTheme.primary.opacity(0.3), radius: 10, x: 0, y: 4)
         .padding(.top, 4)
     }
 
@@ -185,11 +189,16 @@ struct ProfileView: View {
                 Text("退出登录")
             }
             .font(.system(size: 15, weight: .semibold))
-            .foregroundStyle(BlahajTheme.primary)
+            .foregroundStyle(BlahajTheme.danger)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)
             .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(BlahajTheme.separator.opacity(0.55), lineWidth: 0.5)
+            )
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Save ───────────────────────────────────────────────────
@@ -232,19 +241,23 @@ struct ProfileFieldRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
-                .foregroundStyle(BlahajTheme.primaryMid)
-                .frame(width: 22)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(BlahajTheme.primary)
+                .frame(width: 30, height: 30)
+                .background(BlahajTheme.accentLight.opacity(0.75), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.58))
+                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.68))
                 if isSecure {
                     SecureField(placeholder, text: $text)
                         .font(.system(size: 15))
+                        .foregroundStyle(BlahajTheme.textPrimary)
                 } else {
                     TextField(placeholder, text: $text)
                         .font(.system(size: 15))
+                        .foregroundStyle(BlahajTheme.textPrimary)
                         .keyboardType(keyboardType)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
@@ -252,7 +265,7 @@ struct ProfileFieldRow: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 13)
+        .padding(.vertical, 12)
     }
 }
 
