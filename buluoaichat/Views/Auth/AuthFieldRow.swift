@@ -182,10 +182,22 @@ private struct AuthBlahajShark: View {
                 .rotationEffect(.degrees(-7))
 
             Capsule()
-                .fill(Color.white.opacity(0.76))
+                .fill(Color.white)
                 .frame(width: 156, height: 38)
                 .rotationEffect(.degrees(-7))
                 .offset(x: -18, y: 25)
+
+            Capsule()
+                .fill(Color(hex: "#FF9FBC"))
+                .frame(width: 34, height: 12)
+                .rotationEffect(.degrees(-9))
+                .offset(x: -79, y: 8)
+
+            Capsule()
+                .fill(Color(hex: "#FF7FA8").opacity(0.72))
+                .frame(width: 18, height: 4)
+                .rotationEffect(.degrees(-9))
+                .offset(x: -80, y: 10)
 
             Circle()
                 .fill(BlahajTheme.textPrimary)
@@ -210,7 +222,7 @@ private struct AuthBlahajShark: View {
             .offset(x: -35, y: 0)
 
             Capsule()
-                .fill(BlahajTheme.primary.opacity(0.18))
+                .fill(BlahajTheme.primary.opacity(0.16))
                 .frame(width: 92, height: 12)
                 .blur(radius: 8)
                 .offset(y: 68)
