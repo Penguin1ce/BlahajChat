@@ -5,6 +5,7 @@
 //  聊天气泡界面 — Telegram iOS 26 风格 + 视频通话入口
 
 import SwiftUI
+import UIKit
 
 // MARK: - Chat Detail View
 
@@ -58,9 +59,17 @@ struct ChatDetailView: View {
                 proxy.scrollTo("bottom", anchor: .bottom)
             }
             .onChange(of: messages.count) {
-                withAnimation(.spring(response: 0.3)) {
-                    proxy.scrollTo("bottom", anchor: .bottom)
-                }
+                scrollToBottom(proxy)
+            }
+            .onChange(of: inputFocused) { _, isFocused in
+                guard isFocused else { return }
+                scrollToBottom(proxy)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillChangeFrameNotification)) { notification in
+                scrollToBottom(proxy, notification: notification)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { notification in
+                scrollToBottom(proxy, notification: notification)
             }
         }
         .background(BlahajScreenBackground())
@@ -140,6 +149,28 @@ struct ChatDetailView: View {
         guard !text.isEmpty else { return }
         inputText = ""
         appState.sendMessage(text, in: conversation)
+    }
+
+    private func scrollToBottom(_ proxy: ScrollViewProxy) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) {
+            proxy.scrollTo("bottom", anchor: .bottom)
+        }
+    }
+
+    private func scrollToBottom(_ proxy: ScrollViewProxy, notification: Notification) {
+        let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.28
+        let animation = Animation.easeOut(duration: max(duration, 0.18))
+
+        withAnimation(animation) {
+            proxy.scrollTo("bottom", anchor: .bottom)
+        }
+
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(duration))
+            withAnimation(.easeOut(duration: 0.12)) {
+                proxy.scrollTo("bottom", anchor: .bottom)
+            }
+        }
     }
 }
 

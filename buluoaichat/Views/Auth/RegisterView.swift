@@ -22,90 +22,60 @@ struct RegisterView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-
+        ZStack {
             BlahajScreenBackground()
 
-            VStack(spacing: 0) {
-                heroSection.padding(.top, 30)
-                Spacer()
-            }
+            ScrollView {
+                VStack(spacing: 16) {
+                    AuthBlahajRegisterHero()
 
-            // 底部白卡
-            VStack(spacing: 18) {
+                    AuthCard(topPadding: 20, bottomPadding: 18, spacing: 15) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("创建账号")
+                                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                                    .foregroundStyle(BlahajTheme.textPrimary)
+                                Text("验证邮箱，领取你的海域名牌")
+                                    .font(.footnote)
+                                    .foregroundStyle(BlahajTheme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
 
-                HStack {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("创建账号")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(BlahajTheme.textPrimary)
-                        Text("加入 Blåhaj Chat")
-                            .font(.footnote)
-                            .foregroundStyle(BlahajTheme.textSecondary)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, 4)
-
-                // 输入框
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        VStack(spacing: 0) {
+                        AuthFormGroup {
                             AuthFieldRow(icon: "envelope.fill", placeholder: "邮箱地址",
                                          text: $email, isSecure: false,
                                          keyboardType: .emailAddress,
                                          accentColor: BlahajTheme.primaryMid)
-                            Divider().padding(.leading, 52)
+                            AuthDivider()
                             AuthFieldRow(icon: "person.fill", placeholder: "用户名",
                                          text: $username, isSecure: false,
                                          keyboardType: .default,
                                          accentColor: BlahajTheme.primaryMid)
-                            Divider().padding(.leading, 52)
-                            AuthFieldRow(icon: "number.circle.fill", placeholder: "邮箱验证码",
-                                         text: $emailCode, isSecure: false,
-                                         keyboardType: .numberPad,
-                                         accentColor: BlahajTheme.primaryMid)
-                            Divider().padding(.leading, 52)
+                            AuthDivider()
+                            AuthCodeFieldRow(
+                                code: $emailCode,
+                                isSendingCode: isSendingCode,
+                                canRequestCode: !email.isEmpty,
+                                requestCode: requestCode
+                            )
+                            AuthDivider()
                             AuthFieldRow(icon: "lock.fill", placeholder: "密码",
                                          text: $password, isSecure: true,
                                          keyboardType: .default,
                                          accentColor: BlahajTheme.primaryMid)
-                            Divider().padding(.leading, 52)
+                            AuthDivider()
                             AuthFieldRow(icon: "lock.shield.fill", placeholder: "确认密码",
                                          text: $confirmPassword, isSecure: true,
                                          keyboardType: .default,
                                          accentColor: BlahajTheme.primaryMid)
                         }
-                        .glassEffect(in: .rect(cornerRadius: BlahajTheme.radiusInput))
                         .animation(.none, value: email)
                         .animation(.none, value: username)
                         .animation(.none, value: emailCode)
                         .animation(.none, value: password)
                         .animation(.none, value: confirmPassword)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: BlahajTheme.radiusInput, style: .continuous)
-                                .stroke(BlahajTheme.separator.opacity(0.55), lineWidth: 0.5)
-                        )
-
-                        Button(action: requestCode) {
-                            HStack(spacing: 7) {
-                                if isSendingCode {
-                                    ProgressView()
-                                        .tint(BlahajTheme.primary)
-                                } else {
-                                    Image(systemName: "paperplane.fill")
-                                }
-                                Text(isSendingCode ? "正在发送验证码" : "发送邮箱验证码")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(BlahajTheme.primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 11)
-                            .background(BlahajTheme.accentLight, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        }
-                        .disabled(isSendingCode || email.isEmpty)
-                        .buttonStyle(.plain)
-                        .opacity(isSendingCode || email.isEmpty ? 0.62 : 1)
 
                         if let codeMessage {
                             Text(codeMessage)
@@ -126,69 +96,31 @@ struct RegisterView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                         }
+
+                        BlahajPrimaryButton(isLoading: isLoading, action: register) {
+                            Text("注册")
+                        }
+                        .disabled(isLoading)
+                        .opacity(isLoading ? 0.55 : 1)
+
+                        Button(action: { dismiss() }) {
+                            HStack(spacing: 4) {
+                                Text("已有账号？")
+                                    .foregroundStyle(BlahajTheme.textSecondary.opacity(0.75))
+                                Text("返回登录")
+                                    .foregroundStyle(BlahajTheme.cta)
+                                    .fontWeight(.semibold)
+                            }
+                            .font(.subheadline)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-
-                // CTA 注册按钮
-                BlahajPrimaryButton(isLoading: isLoading, action: register) {
-                    Text("注册")
-                }
-                .disabled(isLoading)
-                .opacity(isLoading ? 0.55 : 1)
-
-                // 返回登录
-                Button(action: { dismiss() }) {
-                    HStack(spacing: 4) {
-                        Text("已有账号？")
-                            .foregroundStyle(BlahajTheme.textSecondary.opacity(0.75))
-                        Text("返回登录")
-                            .foregroundStyle(BlahajTheme.cta)
-                            .fontWeight(.semibold)
-                    }
-                    .font(.subheadline)
-                }
-                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
+                .padding(.bottom, 36)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 32)
-            .padding(.bottom, 16)
-            .frame(maxWidth: .infinity)
-            .background(alignment: .top) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: BlahajTheme.radiusCard,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: BlahajTheme.radiusCard,
-                    style: .continuous
-                )
-                .fill(BlahajTheme.cardBg)
-                .ignoresSafeArea(edges: .bottom)
-                .shadow(color: BlahajTheme.shadow.opacity(0.08), radius: 24, x: 0, y: -8)
-            }
-        }
-    }
-
-    // MARK: - Hero
-    private var heroSection: some View {
-        VStack(spacing: 12) {
-            Image("frontui")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 84, height: 84)
-                .padding(7)
-                .background(BlahajTheme.cardBg, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
-                .shadow(color: BlahajTheme.shadow.opacity(0.10), radius: 14, x: 0, y: 7)
-
-            VStack(spacing: 3) {
-                Text("Blåhaj Chat")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(BlahajTheme.textPrimary)
-                Text("Blåhaj Ocean Friends")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundStyle(BlahajTheme.primary)
-                    .tracking(1.4)
-            }
+            .scrollDismissesKeyboard(.interactively)
         }
     }
 
@@ -242,6 +174,49 @@ struct RegisterView: View {
             }
             isSendingCode = false
         }
+    }
+}
+
+private struct AuthCodeFieldRow: View {
+    @Binding var code: String
+    let isSendingCode: Bool
+    let canRequestCode: Bool
+    let requestCode: () -> Void
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "number.circle.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(BlahajTheme.primaryMid)
+                .frame(width: 32, height: 32)
+                .background(BlahajTheme.accentLight.opacity(0.75), in: Circle())
+
+            TextField("邮箱验证码", text: $code)
+                .font(.system(size: 15))
+                .foregroundStyle(BlahajTheme.textPrimary)
+                .keyboardType(.numberPad)
+
+            Button(action: requestCode) {
+                HStack(spacing: 5) {
+                    if isSendingCode {
+                        ProgressView()
+                            .controlSize(.mini)
+                            .tint(BlahajTheme.primary)
+                    }
+                    Text(isSendingCode ? "发送中" : "获取")
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(BlahajTheme.primary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(BlahajTheme.accentLight, in: Capsule())
+            }
+            .disabled(isSendingCode || !canRequestCode)
+            .buttonStyle(.plain)
+            .opacity(isSendingCode || !canRequestCode ? 0.58 : 1)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 }
 
